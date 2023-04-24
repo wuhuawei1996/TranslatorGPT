@@ -1,0 +1,30 @@
+[package]
+name = "TranslateGPT"
+version = "0.0.0"
+description = "A Desktop Application for Translation by Word Selection or Word Capturing Based on ChatGPT, Google Translate, and DeepL."
+authors = ["Huawei Wu"]
+license = "MIT"
+repository = ""
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1.2", features = [] }
+
+[dependencies]
+tauri = { version = "1.2", features = ["clipboard-read-text", "clipboard-write-text", "global-shortcut-all", "os-all", "process-all", "shell-execute", "shell-open", "shell-sidecar", "system-tray", "window-center", "window-hide", "window-maximize", "window-minimize", "window-set-always-on-top", "window-set-focus", "window-set-position", "window-set-size", "window-set-skip-taskbar", "window-show", "window-start-dragging", "window-unmaximize", "window-unminimize"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+rdev= {git="https://github.com/Narsil/rdev", branch="main"}
+
+screenshots= {git="https://github.com/nashaofu/screenshots-rs", branch="master"}
+base64= {}
+
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]

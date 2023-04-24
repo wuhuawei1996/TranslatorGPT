@@ -1,0 +1,39 @@
+{
+  "name": "translateGPT",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "updater": "node scripts/updater.mjs",
+    "release": "node scripts/release.mjs"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.1.0",
+    "@tauri-apps/api": "^1.2.0",
+    "axios": "^1.3.6",
+    "element-plus": "^2.3.3",
+    "sass": "^1.62.0",
+    "style-loader": "^3.3.2",
+    "tesseract.js": "^4.0.3",
+    "vue": "^3.2.45",
+    "vue-router": "^4.1.6",
+    "vuex": "^4.0.2"
+  },
+  "devDependencies": {
+    "@actions/github": "^5.1.1",
+    "@tauri-apps/cli": "^1.2.3",
+    "@vitejs/plugin-vue": "^4.0.0",
+    "node-fetch": "^3.3.1",
+    "node-sass": "^8.0.0",
+    "sass-loader": "^13.2.2",
+    "style-resources-loader": "^1.4.1",
+    "unplugin-auto-import": "^0.15.3",
+    "unplugin-vue-components": "^0.24.1",
+    "vite": "^4.2.1",
+    "vue-cli-plugin-style-resources-loader": "~0.1.5"
+  },
+  "type": "module"
+}

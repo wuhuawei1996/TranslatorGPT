@@ -1,0 +1,144 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:15859",
+    "distDir": "../dist",
+    "withGlobalTauri": false
+  },
+  "package": {
+    "productName": "TranslateGPT",
+    "version": "0.0.0"
+  },
+  "tauri": {
+    "systemTray": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true
+    },
+
+    "allowlist": {
+      "all": false,
+      "process": {
+        "all": true
+      },
+      "clipboard": {
+        "all": false,
+        "writeText": true,
+        "readText": true
+      },
+      "shell": {
+        "all": false,
+        "open": true,
+        "execute": true,
+        "sidecar": true,
+        "scope": [
+          {
+            "name": "getMousePosition",
+            "cmd": "powershell",
+            "args": [
+              "-command",
+              "& {Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Cursor]::Position.X; [System.Windows.Forms.Cursor]::Position.Y}"
+            ]
+          }
+        ]
+      },
+      "os": {
+        "all": true
+      },
+      "window": {
+        "all": false,
+        "setPosition": true,
+        "setSize": true,
+        "show": true,
+        "hide": true,
+        "setFocus": true,
+        "startDragging": true,
+        "maximize": true,
+        "unmaximize": true,
+        "minimize": true,
+        "unminimize": true,
+        "center": true,
+        "setAlwaysOnTop": true,
+        "setSkipTaskbar": true
+      },
+      "globalShortcut": {
+        "all": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "com.tauri.dev",
+      "targets": "all"
+    },
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": true,
+      "dialog": true,
+      "endpoint": [
+        "https://github.com/wuhuawei1996/TranslatorGPT/releases/download/updater/update.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDgzQzQ4MkI4NjA2NDA4QTkKUldTcENHUmd1SUxFZzZYQWxlQ2YwU0RObkRlWXdXQ1ArWXZSbmk4cFBEb3JSenN6RnNuYWhsN0gK"
+    },
+    "windows": [
+      {
+        "label": "index",
+        "fullscreen": false,
+        "title": "TranslateGPT",
+        "minWidth": 800,
+        "minHeight": 500,
+        "width": 800,
+        "height": 600,
+        "visible": false,
+        "fileDropEnabled": false,
+        "center": true,
+        "decorations": false,
+        "transparent": true,
+        "skipTaskbar": true,
+        "url": "/windows/index/index.html"
+      },
+      {
+        "label": "suspended",
+        "fullscreen": false,
+        "title": "TranslateGPT",
+        "width": 100,
+        "height": 100,
+        "minWidth": 420,
+        "minHeight": 200,
+        "resizable": false,
+        "decorations": false,
+        "visible": true,
+        "alwaysOnTop": true,
+        "transparent": true,
+        "hiddenTitle": true,
+        "fileDropEnabled": false,
+        "skipTaskbar": true,
+        "url": "/windows/suspended/index.html"
+      },
+      {
+        "label": "screenshot",
+        "fullscreen": true,
+        "width": 800,
+        "height": 600,
+        "title": "TranslateGPT",
+        "resizable": false,
+        "decorations": false,
+        "visible": false,
+        "alwaysOnTop": true,
+        "transparent": true,
+        "hiddenTitle": true,
+        "fileDropEnabled": false,
+        "skipTaskbar": true,
+        "url": "/windows/screenshot/index.html"
+      }
+    ]
+  }
+}
