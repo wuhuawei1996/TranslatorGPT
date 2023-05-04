@@ -1,7 +1,7 @@
 <script>
 // Public
 import { appWindow } from "@tauri-apps/api/window";
-import { emit } from "@tauri-apps/api/event";
+import { emit, listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/tauri";
 import { currentMonitor } from "@tauri-apps/api/window";
 import { Close, Check } from "@element-plus/icons-vue";
@@ -16,6 +16,7 @@ export default {
   components: { Close, Check },
   data() {
     return {
+      listeners: [],
       windowWidth: 0,
       windowHeight: 0,
       startPointX: 0,
@@ -105,17 +106,16 @@ export default {
     },
   },
   methods: {
-    clear() {
+    async clear() {
       this.left = 0;
       this.top = 0;
       this.width = 0;
       this.height = 0;
-      appWindow.hide();
+      await appWindow.hide();
     },
     async capture() {
       const { left, top, width, height } = this;
-      this.clear();
-      await appWindow.hide();
+      await this.clear();
       this.$nextTick(async () => {
         try {
           const response = await invoke("screenshot", {
@@ -308,26 +308,44 @@ export default {
       this.windowHeight = height;
     },
     async registerShortcuts() {
-      const getMousePositionShortcut = "Shift+Tab";
-      await unregister(getMousePositionShortcut);
-      if (!(await isRegistered(getMousePositionShortcut))) {
-        await register(getMousePositionShortcut, async () => {
-          await appWindow.show();
-          await appWindow.setFocus();
-        });
-      }
       window.addEventListener("keydown", (e) => {
-        if (e.keyCode === 27) {
-          this.clear();
+        if (e) {
+          if (e.keyCode === 27) {
+            this.clear();
+          } else {
+            e.preventDefault();
+          }
         }
       });
+      document.oncontextmenu = function (event) {
+        return false;
+      };
+    },
+    async addListeners() {
+      try {
+        this.listeners.push(
+          ...[
+            await listen("screenshot", async () => {
+              await appWindow.show();
+              await appWindow.setFocus();
+            }),
+          ]
+        );
+      } catch (err) {
+        console.error(err);
+      }
     },
   },
   mounted() {
     this.getMonitorSize();
     this.registerShortcuts();
+    this.addListeners();
   },
-  unmounted() {},
+  unmounted() {
+    this.listeners.map((item) => {
+      item();
+    });
+  },
 };
 </script>
 

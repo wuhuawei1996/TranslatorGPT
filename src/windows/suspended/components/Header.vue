@@ -20,7 +20,7 @@ export default {
     ConfigSelector,
   },
   data() {
-    return { windowHeight: 0 };
+    return { windowHeight: 0, isTranslating: false };
   },
   computed: {
     logoPic() {
@@ -39,8 +39,10 @@ export default {
   methods: {
     close() {
       appWindow.hide();
+      this.$emit("isTranslatingChange", false);
     },
     changeToMainWindow() {
+      if (this.isTranslating) return;
       this.$emit("changeToMainWindow");
     },
     async syncTranslationConfig() {
@@ -68,10 +70,16 @@ export default {
       :systemLanguage="systemLanguage"
       :config="config"
       :settings="settings"
+      class="el-select-limit-height"
     />
 
     <div class="icons" data-tauri-drag-region>
-      <div class="icon" @click="changeToMainWindow">
+      <div
+        class="icon"
+        @click="changeToMainWindow"
+        :style="{ cursor: isTranslating ? 'not-allowed' : 'pointer' }"
+        :title="systemLanguage['changeToMain']"
+      >
         <el-icon size="15" style="margin-top: -0.3px">
           <House />
         </el-icon>
@@ -90,17 +98,12 @@ export default {
   background-color: #f5f7fa;
   justify-content: space-between;
 
-  .el-select-dropdown__wrap {
-    max-height: calc(var(--height) - 20px) !important;
-  }
-
   .engine-selector {
     width: 90px;
     margin-right: 20px;
   }
 
-  .source-language-selector,
-  .target-language-selector {
+  .language-selector {
     width: 100px;
   }
 }

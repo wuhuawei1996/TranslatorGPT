@@ -14,33 +14,23 @@ export default {
     systemLanguage: {},
     config: {},
     settings: {},
+    noSourceLanguage: false,
+    filterProofreading: false,
   },
   components: {
     Switch,
   },
   data() {
     return {
-      formerSourceLanguages: [],
       listeners: [],
     };
   },
   computed: {
-    sourceLanguageNoEmpty() {
-      return this.config.sourceLanguages.length > 0;
-    },
     languageNames() {
       return languageNames[this.settings.basics.language];
     },
     languageOptions() {
       return generateLanguageOptions(this.settings.basics.language);
-    },
-    sourceLanguageTitle() {
-      return this.config.sourceLanguages
-        .map((item) => {
-          if (item === "auto") return this.systemLanguage.autoLanguage;
-          return languageNames[this.settings.basics.language][item];
-        })
-        .join(" + ");
     },
     engineOptions() {
       const keys = this.settings.keys;
@@ -53,15 +43,22 @@ export default {
           };
         })
         .filter((item) => {
-          return item.key !== "";
+          return (
+            item.key !== "" &&
+            (this.filterProofreading ? item.proofreading : true)
+          );
         });
     },
   },
   watch: {
     engineOptions: {
       handler(newVal) {
-        if (newVal.length > 0 && this.config.engine === "") {
-          this.config.engine = newVal[0].value;
+        if (newVal.length > 0) {
+          if (this.config.engine === "") {
+            this.config.engine = newVal[0].value;
+          }
+        } else {
+          this.config.engine = "";
         }
       },
       immediate: true,
@@ -81,35 +78,21 @@ export default {
       });
     },
     initData() {
-      if (this.config.sourceLanguages.length === 0) {
-        this.config.sourceLanguages = ["auto"];
+      if (this.config.sourceLanguage === "") {
+        this.config.sourceLanguage = "auto";
       }
       if (this.config.targetLanguage === "") {
         this.config.targetLanguage = "eng";
       }
     },
     async onChange(value, key) {
-      const index = value.indexOf("auto");
-      if (index !== -1) {
-        if (this.formerSourceLanguages.indexOf("auto") === -1) {
-          if (this.formerSourceLanguages.length > 0) {
-            value = ["auto"];
-          }
-        } else {
-          value.splice(index, 1);
-        }
-      }
-      if (value.length === 0) {
-        value = ["auto"];
-      }
       this.config[key] = value;
-      this.formerSourceLanguages = [].concat(value);
     },
     switchLanguages() {
-      const { sourceLanguages, targetLanguage } = this.config;
-      const temp = sourceLanguages[0];
-      if (temp !== "auto") {
-        this.config.sourceLanguages = [targetLanguage];
+      const { sourceLanguage, targetLanguage } = this.config;
+      if (sourceLanguage !== "auto") {
+        const temp = sourceLanguage;
+        this.config.sourceLanguage = targetLanguage;
         this.config.targetLanguage = temp;
       }
     },
@@ -120,13 +103,19 @@ export default {
           await listen("sync_translation_config", ({ payload: { config } }) => {
             Object.assign(this.config, config);
           }),
+          await listen("tauri://blur", () => {
+            Object.keys(this.$refs).map((key) => {
+              if (key.indexOf("selector") != -1) {
+                this.$refs[key].blur();
+              }
+            });
+          }),
         ]
       );
     },
   },
   mounted() {
     this.initData();
-    this.formerSourceLanguages = [].concat(this.config.sourceLanguages);
     this.addListeners();
   },
   unmounted() {
@@ -138,6 +127,7 @@ export default {
 <template>
   <div class="config-selector flex-row">
     <el-select
+      ref="engine-selector"
       :placeholder="systemLanguage['engine']"
       size="small"
       class="engine-selector"
@@ -156,19 +146,20 @@ export default {
     </el-select>
 
     <el-select
-      multiple
+      v-if="!noSourceLanguage"
+      ref="source-language-selector"
       placement="bottom"
-      :filterable="false"
       :teleported="false"
-      :no-match-text="systemLanguage.notFound"
       filterable
+      :no-match-text="systemLanguage.notFound"
       :placeholder="systemLanguage['sourceLanguage']"
       size="small"
-      class="source-language-selector"
-      :class="{ 'multiple-non-empty': sourceLanguageNoEmpty }"
-      :model-value="config.sourceLanguages"
-      :title="sourceLanguageTitle"
-      @change="onChange($event, 'sourceLanguages')"
+      class="language-selector"
+      :model-value="config.sourceLanguage"
+      :title="
+        languageNames[config.sourceLanguage] || systemLanguage.autoLanguage
+      "
+      @change="onChange($event, 'sourceLanguage')"
     >
       <el-option
         v-for="item in [
@@ -184,20 +175,26 @@ export default {
       />
     </el-select>
 
-    <div class="icon" style="margin: 0px 3px" @click="switchLanguages">
+    <div
+      class="icon"
+      style="margin: 0px 3px"
+      @click="switchLanguages"
+      v-if="!noSourceLanguage"
+    >
       <el-icon size="15" style="margin-top: -0.3px">
         <Switch />
       </el-icon>
     </div>
 
     <el-select
+      ref="target-language-selector"
       placement="bottom"
       :teleported="false"
       filterable
       :no-match-text="systemLanguage.notFound"
       :placeholder="systemLanguage['targetLanguage']"
       size="small"
-      class="target-language-selector"
+      class="language-selector"
       :model-value="config.targetLanguage"
       :title="languageNames[config.targetLanguage]"
       @change="onChange($event, 'targetLanguage')"

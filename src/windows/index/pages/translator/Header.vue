@@ -14,6 +14,7 @@ export default {
   },
   components: {
     Switch,
+    ConfigSelector,
   },
   data() {
     return {};
@@ -49,7 +50,7 @@ export default {
       :settings="settings"
     />
     <div class="icons">
-      <div class="icon"></div>
+      <!--<div class="icon"></div>-->
     </div>
   </div>
 </template>
@@ -63,20 +64,8 @@ export default {
     margin-right: 20px;
   }
 
-  .source-language-selector,
-  .target-language-selector {
+  .language-selector {
     width: 120px;
-  }
-
-  .config-selector {
-    .el-select .el-input__wrapper {
-      background-color: $blue-background !important;
-      box-shadow: none !important;
-    }
-    input,
-    .el-select__tags-text {
-      color: black !important;
-    }
   }
 }
 

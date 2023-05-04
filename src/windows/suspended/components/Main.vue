@@ -1,23 +1,18 @@
 <script>
 // Public
-import { Command } from "@tauri-apps/api/shell";
 import { platform } from "@tauri-apps/api/os";
 import { appWindow, PhysicalPosition } from "@tauri-apps/api/window";
 import { readText, writeText } from "@tauri-apps/api/clipboard";
 import { invoke } from "@tauri-apps/api/tauri";
 import sleep from "/src/utils/sleep.js";
-import { emit } from "@tauri-apps/api/event";
-import {
-  register,
-  isRegistered,
-  unregister,
-} from "@tauri-apps/api/globalShortcut";
+import { listen, emit } from "@tauri-apps/api/event";
 
 // Private
 import stream from "/src/utils/stream.js";
-
-const positionCommandArg =
-  "& {Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Cursor]::Position.X; [System.Windows.Forms.Cursor]::Position.Y}";
+import { translationFormatter } from "/src/utils/result_formatter.js";
+import getSelectedText from "/src/utils/get_selected_text.js";
+import ocr from "/src/utils/ocr.js";
+import translateFunc from "/src/utils/translate_func.js";
 
 export default {
   name: "Main",
@@ -31,54 +26,35 @@ export default {
   },
   data() {
     return {
+      listeners: [],
       isGettingMousePosition: false,
       rawContent: "",
+      isTranslating: false,
       translatedContentArray: [],
       tips: "",
     };
   },
   computed: {
-    engineOptions() {
-      const keys = this.settings.keys;
-      return [
-        {
-          label: "ChatGPT",
-          value: "gpt3",
-          key: keys.gpt3,
-        },
-        {
-          label: "Google",
-          value: "google",
-          key: keys.google,
-        },
-        {
-          label: "DeepL",
-          value: "deepl",
-          key: keys.deepl,
-        },
-      ].filter((item) => item.key);
-    },
+    // 是否有可用引擎
     noEngines() {
-      return this.engineOptions.length === 0;
+      return this.config.engine === "";
     },
+    // 翻译后的内容
     translatedContent() {
-      return this.noEngines
-        ? this.systemLanguage["noEngine"] + this.systemLanguage["period"]
-        : this.translatedContentArray.length > 1
-        ? this.translatedContentArray
-            .filter(
-              (item) => item != `${this.systemLanguage.translating}......`
-            )
-            .join("")
-        : this.translatedContentArray.join("");
+      return translationFormatter(this, this.rawContent);
     },
+    // 系统语言
     systemLanguage() {
       return this.$root.systemLanguage;
     },
   },
   watch: {
+    // 监听翻译内容变化，自动滚动到底部
     "translatedContentArray.length"() {
       this.$nextTick(() => this.scrollToBottom());
+    },
+    isTranslating(newVal) {
+      this.$emit("isTranslatingChange", newVal);
     },
   },
   methods: {
@@ -86,123 +62,91 @@ export default {
     async syncTranslationConfig() {
       const { rawContent, translatedContentArray, tips } = this;
       await emit("sync_translation_data", {
-        data: {
-          rawContent,
-          translatedContentArray,
-          tips,
-        },
+        rawContent,
+        translatedContentArray,
+        tips,
       });
       this.rawContent = "";
     },
     // 显示翻译结果窗口
     async showWindow() {
-      try {
-        await appWindow.hide();
-        this.changeHeaderVisibility(false);
-        this.translatedContentArray = [
-          `${this.systemLanguage.translating}......`,
-        ];
-        const [x, y] = await this.getMousePosition();
-        this.rawContent = await this.getRawContent();
-        if (x >= 0 && y >= 0) {
-          await this.setWindowPosition(x, y);
-          await this.translate();
-        } else {
-          throw new Error();
-        }
-      } catch (err) {
-        console.error(err);
-        this.translatedContentArray = [this.systemLanguage.translatingError];
+      await appWindow.hide();
+      this.changeHeaderVisibility(false);
+      const [x, y] = await this.getMousePosition();
+      if (x >= 0 && y >= 0) {
+        await this.setWindowPosition(x, y);
       }
     },
     // 刷新翻译内容
     async refreshTranslation() {
-      try {
-        this.translatedContentArray = [
-          `${this.systemLanguage.translating}......`,
-        ];
-        await this.translate();
-      } catch (err) {
-        console.error(err);
-        this.translatedContentArray = [this.systemLanguage.translatingError];
+      await this.translate();
+    },
+    // 截屏翻译
+    async screenshot(base64) {
+      const that = this;
+      const {
+        basics: { openMainOnScreenshot },
+      } = this.settings;
+      if (!openMainOnScreenshot) {
+        this.rawContent = "";
+        const { sourceLanguage } = this.config;
+        await this.showWindow();
+        if (sourceLanguage === "auto") {
+          this.translatedContentArray = [
+            this.systemLanguage["noSourceLanguage"],
+          ];
+        } else {
+          this.translatedContentArray = [
+            `${this.systemLanguage.recognizing}......`,
+          ];
+          const rawContent = await ocr(base64, sourceLanguage);
+          if (!rawContent) {
+            this.translatedContentArray = [this.systemLanguage["noContent"]];
+          } else {
+            this.rawContent = rawContent;
+            this.isTranslating = false; // 先停止原来的翻译
+            await this.translate();
+          }
+        }
       }
     },
-    // 发起翻译请求
+    // 划词翻译
+    async selection() {
+      const that = this;
+      const {
+        basics: { openMainOnSelection },
+      } = this.settings;
+      if (!openMainOnSelection) {
+        this.rawContent = "";
+        const rawContent = await getSelectedText();
+        await this.showWindow();
+        if (!rawContent) {
+          this.translatedContentArray = [this.systemLanguage.noContent];
+        } else {
+          this.rawContent = rawContent;
+          this.isTranslating = false; // 先停止原来的翻译
+          await this.translate();
+        }
+      }
+    },
+    // 翻译
     async translate() {
-      if (!this.rawContent) {
-        this.translatedContentArray = [this.systemLanguage.noContent];
-        return;
-      }
-      return await stream(
-        this.rawContent,
-        this.config,
-        this.config.sourceLanguages === this.systemLanguage.autoLanguage,
-        this.translatedContentArray
-      );
-    },
-    // 获取剪贴板内容
-    async getRawContent() {
-      let oldContent = (await readText()) || "";
-      if (oldContent !== "") {
-        await writeText("");
-        // 死循环已保证剪贴板内容被清空
-        while (await readText()) {}
-      }
-      await invoke("copy_content", {}); // 模拟 Ctrl + C
-      let count = 10;
-      // 死循环以保证复制已生效
-      while (!(await readText())) {
-        count--;
-        await sleep(100);
-        if (count < 0) break;
-      }
-      const rawContent = (await readText()) || "";
-      if (oldContent) await writeText(oldContent); // 还原剪贴板内容
-      return rawContent.trim() ? rawContent : "";
+      await translateFunc(this);
     },
     // 获取鼠标指针当前位置
     async getMousePosition() {
-      const platformName = await platform();
-      switch (platformName) {
-        case "win32": {
-          return await this.getMousePositionWin();
-          break;
-        }
-        case "darwin": {
-          break;
-        }
+      try {
+        const position = await invoke("get_mouse_position", {});
+        return position.split(",").map((item) => parseInt(item));
+      } catch (err) {
+        console.error(err);
+        return [-1, -1];
       }
-    },
-    // Windows 获取鼠标指针当前位置
-    getMousePositionWin() {
-      return new Promise((resolve) => {
-        if (this.isGettingMousePosition) {
-          resolve([-1, -1]);
-        }
-        this.isGettingMousePosition = true;
-        const result = [];
-        const command = new Command("getMousePosition", [
-          "-command",
-          positionCommandArg,
-        ]);
-        command.on("close", async () => {
-          this.isGettingMousePosition = false;
-          resolve(result);
-        });
-        command.stdout.on("data", (line) => {
-          line = line.trim();
-          if (/^[0-9]*$/.test(line) && result.length < 2)
-            result.push(parseInt(line));
-        });
-        // command.stderr.on("data", (line) => console.log(line));
-        command.spawn();
-      });
     },
     // 设置窗口位置
     async setWindowPosition(x, y) {
       try {
         const offset = 10;
-
         const { windowWidth, windowHeight, screenWidth, screenHeight } =
           this.$root;
         const marginBottom =
@@ -215,7 +159,7 @@ export default {
             : y - this.headerHeight + offset;
         await appWindow.setPosition(new PhysicalPosition(x, y));
         await appWindow.show();
-        await appWindow.setFocus();
+        await appWindow.setFocus(true);
       } catch (err) {
         console.log(err);
       }
@@ -231,27 +175,38 @@ export default {
       this.$root.isHeaderVisible = arg;
     },
 
-    // 注册快捷键
-    async registerShortcuts() {
-      const getMousePositionShortcut = "CommandOrControl+Shift+G";
-      await unregister(getMousePositionShortcut);
-      if (!(await isRegistered(getMousePositionShortcut))) {
-        await register(getMousePositionShortcut, () => {
-          this.showWindow();
-        });
+    async addListeners() {
+      try {
+        this.listeners.push(
+          ...[
+            // 划词翻译
+            await listen("selection", () => {
+              this.selection();
+            }),
+            // 获取截图结果
+            await listen("screenshot_result", async ({ payload: base64 }) => {
+              this.screenshot(base64);
+            }),
+          ]
+        );
+      } catch (err) {
+        console.error(err);
       }
     },
   },
   mounted() {
-    this.registerShortcuts();
+    this.addListeners();
+  },
+  unmounted() {
+    this.listeners.map((item) => item());
   },
 };
 </script>
 <template>
   <div class="main">
-    <el-scrollbar class="main-container" ref="myScrollbar">
+    <el-scrollbar class="main-container selectable" ref="myScrollbar">
       <span class="label">{{ systemLanguage["translation"] }}</span
-      ><span>{{ translatedContent }}</span>
+      ><span v-html="translatedContent"></span>
     </el-scrollbar>
     <el-form-item :label="systemLanguage['hint']" class="tips">
       <el-input
@@ -259,6 +214,8 @@ export default {
         v-model="tips"
         :title="systemLanguage['inputHints']"
         :placeholder="systemLanguage['inputHints']"
+        @change="refreshTranslation"
+        :disabled="isTranslating"
       />
     </el-form-item>
   </div>
@@ -312,6 +269,7 @@ $grey: #93959f;
 
     .el-input__wrapper {
       padding: 0px !important;
+      background-color: transparent !important;
     }
   }
 }

@@ -59,7 +59,8 @@
         "unminimize": true,
         "center": true,
         "setAlwaysOnTop": true,
-        "setSkipTaskbar": true
+        "setSkipTaskbar": true,
+        "setCursorPosition": true
       },
       "globalShortcut": {
         "all": true
@@ -83,7 +84,7 @@
     "updater": {
       "active": true,
       "dialog": true,
-      "endpoint": [
+      "endpoints": [
         "https://github.com/wuhuawei1996/TranslatorGPT/releases/download/updater/update.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDgzQzQ4MkI4NjA2NDA4QTkKUldTcENHUmd1SUxFZzZYQWxlQ2YwU0RObkRlWXdXQ1ArWXZSbmk4cFBEb3JSenN6RnNuYWhsN0gK"
@@ -115,7 +116,7 @@
         "minHeight": 200,
         "resizable": false,
         "decorations": false,
-        "visible": true,
+        "visible": false,
         "alwaysOnTop": true,
         "transparent": true,
         "hiddenTitle": true,

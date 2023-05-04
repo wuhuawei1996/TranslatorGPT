@@ -2,7 +2,7 @@ export default () => {
   return {
     translation: {
       engine: "",
-      sourceLanguages: [],
+      sourceLanguage: "",
       targetLanguage: "",
       selectTranslation: true,
       captureTranslation: true,

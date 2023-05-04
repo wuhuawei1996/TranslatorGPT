@@ -6,10 +6,13 @@ use rdev::{simulate, EventType, Key, SimulateError};
 use std::{thread, time};
 use tauri::Manager;
 
-use base64::encode;
+//use base64::encode;
+use base64::{engine::general_purpose, Engine as _};
 use screenshots::Screen;
 
 use tauri_plugin_autostart::MacosLauncher;
+
+use mouse_position::mouse_position::Mouse;
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -18,6 +21,21 @@ struct Payload {
 }
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+
+#[tauri::command]
+
+fn get_mouse_position() -> String {
+    let position = Mouse::get_mouse_position();
+    match position {
+        Mouse::Position { x, y } => format!(
+            "{},{}",
+            String::from(x.to_string()),
+            String::from(y.to_string())
+        ),
+
+        Mouse::Error => format!("{}, {}", String::from("-1"), String::from("-1")),
+    }
+}
 
 #[tauri::command]
 fn screenshot(x: &str, y: &str, width: &str, height: &str) -> String {
@@ -31,17 +49,25 @@ fn screenshot(x: &str, y: &str, width: &str, height: &str) -> String {
         )
         .unwrap();
     let buffer = image.buffer();
-    let base64_str = encode(buffer);
+    let base64_str = general_purpose::STANDARD_NO_PAD.encode(buffer); //encode(buffer);
     base64_str
 }
 
 #[tauri::command]
 
-fn copy_content() {
-    send(&EventType::KeyPress(Key::ControlLeft));
+fn copy_content(os: &str) {
+    if os == "win32" {
+        send(&EventType::KeyPress(Key::ControlLeft));
+    } else if os == "darwin" {
+        send(&EventType::KeyPress(Key::MetaLeft));
+    }
     send(&EventType::KeyPress(Key::KeyC));
     send(&EventType::KeyRelease(Key::KeyC));
-    send(&EventType::KeyRelease(Key::ControlLeft));
+    if os == "win32" {
+        send(&EventType::KeyRelease(Key::ControlLeft));
+    } else if os == "darwin" {
+        send(&EventType::KeyPress(Key::MetaLeft));
+    }
 }
 
 fn send(event_type: &EventType) {
@@ -94,7 +120,11 @@ fn main() {
             },
             _ => {}
         })
-        .invoke_handler(tauri::generate_handler![screenshot, copy_content])
+        .invoke_handler(tauri::generate_handler![
+            screenshot,
+            copy_content,
+            get_mouse_position
+        ])
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
             Some(vec!["--flag1", "--flag2"]), /* arbitrary number of args to pass to your app */

@@ -1,11 +1,15 @@
 import { createStore } from "vuex";
 import defaultSettings from "/src/assets/data/default_settings.js";
+import defaultConfig from "/src/assets/data/default_config.js";
 
 const store = createStore({
   state() {
     return {
       settings: {
         ...defaultSettings(),
+      },
+      config: {
+        ...defaultConfig(),
       },
     };
   },

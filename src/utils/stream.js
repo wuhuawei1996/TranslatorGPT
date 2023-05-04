@@ -1,27 +1,15 @@
-export default async function (content, config, auto, resultArray) {
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization:
-      "Bearer " + "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",
-  };
-  const { sourceLanguage, targetLanguage } = config;
-  const body = JSON.stringify({
-    model: "gpt-3.5-turbo",
-    messages: [
-      {
-        role: "user",
-        content: `Translate ${
-          auto ? "" : sourceLanguage + ""
-        }to ${targetLanguage}:${content}`,
-      },
-    ],
-    stream: true,
-  });
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+export default async function (
+  headers,
+  body,
+  url,
+  resultArray,
+  dataHandler,
+  stopCondition // 用于暂停请求，避免浪费资源
+) {
+  const response = await fetch(url, {
     method: "POST",
-    headers: headers,
-    body: body,
+    headers,
+    body,
   });
 
   if (!response || !response.ok) {
@@ -31,6 +19,7 @@ export default async function (content, config, auto, resultArray) {
       throw new Error();
     }
   }
+
   // 获取响应的可读流
   const stream = response.body;
   // 创建一个reader来读取流中的数据
@@ -39,43 +28,19 @@ export default async function (content, config, auto, resultArray) {
   // 定义一个函数来处理数据块
   function processChunk({ done, value }) {
     // 如果流已经结束，返回一个promise
-    if (done) {
+    if (stopCondition() || done) {
       return Promise.resolve();
     }
 
     var decoder = new TextDecoder();
     const data = decoder.decode(value);
     if (data) {
-      data
-        .split("\n")
-        .filter((item) => {
-          return item.substring(0, 5) === "data:" && item !== "data: [DONE]";
-        })
-        .map((item) => {
-          return JSON.parse(item.substring(5).trim());
-        })
-        .filter((item) => {
-          return (
-            item.choices &&
-            item.choices[0] &&
-            item.choices[0].delta &&
-            item.choices[0].delta.content
-          );
-        })
-        .map((item, index) => {
-          const content = item.choices[0].delta.content;
-          if (index == 0 && content.trim().length === 0) {
-            return;
-          } else {
-            resultArray.push(content);
-          }
-        });
+      dataHandler(data, resultArray);
     }
     // 继续读取下一个数据块，并递归调用processChunk函数
     return reader.read().then(processChunk);
   }
 
   // 开始读取第一个数据块，并调用processChunk函数
-
   await reader.read().then(processChunk);
 }

@@ -208,4 +208,35 @@ const Chinese = {
   yid: "意第绪语",
 };
 
-export default { Chinese, English };
+const French = {
+  ...English,
+};
+
+export const languageNameFormatter = (name) => {
+  let prefix = "";
+  if (name.indexOf("(") !== -1) {
+    const regex = /\((.*?)\)/g;
+    const match = regex.exec(name);
+    if (match !== null) {
+      prefix = match[1];
+      name = name.split("(")[0].trim();
+    }
+  }
+
+  if (name.indexOf("（") !== -1) {
+    const regex = /（(.*?)）/g;
+    const match = regex.exec(name);
+    if (match !== null) {
+      prefix = match[1];
+      name = name.split("（")[0].trim();
+    }
+  }
+
+  if (name.indexOf("/") !== -1) {
+    name = name.split("/")[0].trim();
+  }
+  name = (prefix ? prefix + " " : "") + name;
+  return name;
+};
+
+export default { Chinese, English, French };

@@ -11,7 +11,7 @@ export default () => {
       autoToTray: false,
       alwaysOnTop: true,
       autoUpdate: true,
-      openMainOnPickup: false,
+      openMainOnSelection: false,
       openMainOnScreenshot: false,
       mainWindowClosed: "hide",
       fontSize: "standard",
@@ -20,8 +20,15 @@ export default () => {
     keys,
     shortcuts: {
       showOrHide: ["Ctrl", "Tab"],
-      pickup: ["Ctrl", "Shift", "G"],
+      selection: ["Ctrl", "CapsLock"],
       screenshot: ["Shift", "Alt", "Z"],
     },
   };
+};
+
+export const fontSizes = {
+  small: "14",
+  standard: "16",
+  large: "20",
+  huge: "22",
 };

@@ -9,6 +9,7 @@ import defaultSettings from "/src/assets/data/default_settings.js";
 import defaultConfig from "/src/assets/data/default_config.js";
 import Main from "./components/Main.vue";
 import Header from "./components/Header.vue";
+import banDefaultShortcuts from "/src/utils/ban_default_shortcuts.js";
 
 export default {
   name: "App",
@@ -46,6 +47,10 @@ export default {
     },
   },
   methods: {
+    isTranslatingChange(newVal) {
+      this.$refs.header.isTranslating = newVal;
+      this.$refs.main.isTranslating = newVal;
+    },
     async changeToMainWindow() {
       const { header, main } = this.$refs;
       await header.syncTranslationConfig();
@@ -76,8 +81,10 @@ export default {
       this.listeners.push(
         ...[
           // 窗口失焦
-          await listen("tauri://blur", () => {
-            //if (!this.isHeaderVisible) appWindow.hide();
+          await listen("tauri://blur", ({ windowLabel }) => {
+            if (!this.isHeaderVisible && windowLabel === "suspended") {
+              appWindow.hide();
+            }
           }),
           // 修改设置
           await listen("sync_settings", async ({ payload: { settings } }) => {
@@ -91,6 +98,7 @@ export default {
     await this.listener();
     emit("call_for_sync_settings");
     this.setWindowSize();
+    //banDefaultShortcuts();
   },
   unmounted() {
     this.listeners.map((item) => item());
@@ -121,6 +129,7 @@ export default {
       ref="main"
       :class="{ 'has-border': !isHeaderVisible }"
       @mouseenter="isHeaderVisible = true"
+      @isTranslatingChange="isTranslatingChange"
     />
   </div>
 </template>

@@ -1,5 +1,5 @@
 [package]
-name = "TranslateGPT"
+name = "translate_gpt"
 version = "0.0.0"
 description = "A Desktop Application for Translation by Word Selection or Word Capturing Based on ChatGPT, Google Translate, and DeepL."
 authors = ["Huawei Wu"]
@@ -13,7 +13,7 @@ edition = "2021"
 tauri-build = { version = "1.2", features = [] }
 
 [dependencies]
-tauri = { version = "1.2", features = ["clipboard-read-text", "clipboard-write-text", "global-shortcut-all", "os-all", "process-all", "shell-execute", "shell-open", "shell-sidecar", "system-tray", "window-center", "window-hide", "window-maximize", "window-minimize", "window-set-always-on-top", "window-set-focus", "window-set-position", "window-set-size", "window-set-skip-taskbar", "window-show", "window-start-dragging", "window-unmaximize", "window-unminimize"] }
+tauri = { version = "1.2", features = ["clipboard-read-text", "clipboard-write-text", "global-shortcut-all", "os-all", "process-all", "shell-execute", "shell-open", "shell-sidecar", "system-tray", "updater", "window-center", "window-hide", "window-maximize", "window-minimize", "window-set-always-on-top", "window-set-cursor-position", "window-set-focus", "window-set-position", "window-set-size", "window-set-skip-taskbar", "window-show", "window-start-dragging", "window-unmaximize", "window-unminimize"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
@@ -21,8 +21,9 @@ tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-wo
 tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
 rdev= {git="https://github.com/Narsil/rdev", branch="main"}
 
-screenshots= {git="https://github.com/nashaofu/screenshots-rs", branch="master"}
-base64= {}
+screenshots = {git="https://github.com/nashaofu/screenshots-rs", branch="master"}
+base64 = {git="https://github.com/marshallpierce/rust-base64", branch="master"}
+mouse_position = {git="https://github.com/fayez-nazzal/mouse_position", branch="master"}
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

@@ -8,12 +8,22 @@ import {
   isEnabled,
   disable,
 } from "/src/utils/tauri-plugin-autostart/index";
+import {
+  register,
+  unregisterAll,
+  unregister,
+  isRegistered,
+} from "@tauri-apps/api/globalShortcut";
+
+import { open } from "@tauri-apps/api/shell";
 
 // Private
 import systemLanguage from "/src/assets/data/system_language.js";
 import defaultSettings from "/src/assets/data/default_settings.js";
 import engineNames from "/src/assets/data/engine_names.js";
-import testApiKeys from "/src/utils/test_api_keys.js";
+import testApiKeys from "/src/requests/test_api_keys.js";
+import deepCopy from "/src/utils/deep_copy.js";
+import showWindow from "/src/utils/show_window.js";
 
 const sortFunc = (a, b) => {
   if (a === "Ctrl" || a === "Cmd") return -1;
@@ -52,13 +62,44 @@ const validate = (str) => {
   return str;
 };
 
+const myDefaultSettings = defaultSettings();
+const shortcutsWatcher = {};
+Object.keys(myDefaultSettings.shortcuts).map((item) => {
+  shortcutsWatcher["shortcuts." + item] = {
+    async handler(newVal, oldVal) {
+      const that = this;
+      try {
+        const oldShortcut = oldVal ? oldVal.join("+") : "";
+        const newShortcut = newVal ? newVal.join("+") : "";
+        if (oldShortcut && oldShortcut !== newShortcut) {
+          if (await isRegistered(oldShortcut)) await unregister(oldShortcut);
+        }
+        if (newShortcut && oldShortcut !== newShortcut) {
+          if (!(await isRegistered(newShortcut)))
+            await register(newShortcut, () => {
+              that[item]();
+            });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    immediate: true,
+  };
+});
+
 export default {
   name: "Settings",
   data() {
     return {
+      windowHeight: "480px",
+      scrollerHeight: "260px",
       activeName: "basic",
       visibility: false,
       settings: {
+        ...myDefaultSettings,
+      },
+      oldSettings: {
         ...defaultSettings(),
       },
       candidate: new Set(),
@@ -69,16 +110,24 @@ export default {
     };
   },
   computed: {
+    systemLanguage() {
+      return systemLanguage[this.$store.state.settings.basics.language];
+    },
     systemLanguageSettings() {
-      return systemLanguage[this.$store.state.settings.basics.language][
-        "settings"
-      ];
+      return this.systemLanguage["settings"];
     },
     startOnBoot() {
       return this.$store.state.settings.basics.startOnBoot;
     },
     alwaysOnTop() {
       return this.$store.state.settings.basics.alwaysOnTop;
+    },
+    shortcuts() {
+      return this.$store.state.settings.shortcuts;
+    },
+    // 配置
+    config() {
+      return this.$store.state.config.translation;
     },
   },
   watch: {
@@ -109,13 +158,44 @@ export default {
           await appWindow.setAlwaysOnTop(val);
         } catch (err) {
           console.error(err);
-          const that = this;
         }
       },
       immediate: true,
     },
+    ...shortcutsWatcher,
   },
   methods: {
+    // 显示/隐藏
+    async showOrHide() {
+      try {
+        const isVisible = await appWindow.isVisible();
+        isVisible ? await appWindow.hide() : showWindow(); //await appWindow.show();
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    // 划词翻译
+    async selection() {
+      const { selectTranslation } = this.config;
+      if (selectTranslation) {
+        try {
+          await emit("selection", {});
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    },
+    // 截屏翻译
+    async screenshot() {
+      const { captureTranslation } = this.config;
+      if (captureTranslation) {
+        try {
+          await emit("screenshot", {});
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    },
     // 执行设置
     async executeSettings() {
       const {
@@ -124,6 +204,7 @@ export default {
       try {
         if (!autoToTray) {
           await appWindow.show();
+          await appWindow.setFocus();
         } else {
           await appWindow.hide();
         }
@@ -151,7 +232,7 @@ export default {
               this.settings[item][elem] = data === "true";
             else this.settings[item][elem] = JSON.parse(data);
             this.$store.commit("changeSettings", {
-              [item + "." + elem]: this.settings[item][elem],
+              [item + "." + elem]: deepCopy(this.settings[item][elem]),
             });
           }
         });
@@ -165,6 +246,7 @@ export default {
         this.keyVerified[key] = true;
         return true;
       } else {
+        this.settings.keys[key] = apiKey;
         return false;
       }
     },
@@ -189,6 +271,7 @@ export default {
         return;
       }
       this.loading = true;
+      const apiKey = this.settings.keys[key];
       const result = await testApiKeys[key](apiKey);
       this.loading = false;
       if (result) {
@@ -209,6 +292,7 @@ export default {
     },
     // 保存设置
     saveSettings() {
+      const that = this;
       if (!this.checkKeyVerified()) {
         ElMessage({
           message: that.systemLanguageSettings.notTested,
@@ -223,19 +307,26 @@ export default {
             item + "." + elem,
             JSON.stringify(this.settings[item][elem])
           );
+          if (item === "shortcuts" && elem === "screenshot") {
+          }
           this.$store.commit("changeSettings", {
-            [item + "." + elem]: this.settings[item][elem],
+            [item + "." + elem]: deepCopy(this.settings[item][elem]),
           });
         });
       });
       this.syncSettings();
       this.visibility = false;
     },
+    async openGithub() {
+      await open("https://github.com/wuhuawei1996/TranslatorGPT");
+    },
     show() {
       this.visibility = true;
+      this.oldSettings = deepCopy(this.settings);
     },
     cancel() {
       this.visibility = false;
+      this.settings = deepCopy(this.oldSettings);
     },
     keyUp(event, type) {
       if (this.candidate.size === 0) {
@@ -243,7 +334,7 @@ export default {
         setTimeout(() => {
           const array = Array.from(this.candidate).filter((item) => item);
           array.sort(sortFunc);
-          this.settings.shortcuts[type] = array; //array.join("+");
+          this.settings.shortcuts[type] = array;
           this.candidate = new Set();
         }, 500);
       } else {
@@ -254,7 +345,7 @@ export default {
       try {
         this.listeners.push(
           ...[
-            await listen("call_for_sync_settings", async () => {
+            await listen("call_for_sync_settings", async ({}) => {
               await this.syncSettings();
             }),
           ]
@@ -279,15 +370,16 @@ export default {
   <el-dialog
     v-model="visibility"
     :modal="false"
-    width="480px"
+    :width="windowHeight"
     align-center
     :title="systemLanguageSettings.settings"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
+    :before-close="cancel"
   >
     <el-tabs v-model="activeName" class="tabs" v-loading="loading">
       <el-tab-pane :label="systemLanguageSettings.basic" name="basic">
-        <el-scrollbar class="settings" height="260px">
+        <el-scrollbar class="settings" :height="scrollerHeight">
           <el-form>
             <el-form-item>
               <el-checkbox
@@ -319,8 +411,8 @@ export default {
             </el-form-item>
             <el-form-item>
               <el-checkbox
-                v-model="settings.basics.openMainOnPickup"
-                :label="systemLanguageSettings.openMainOnPickup"
+                v-model="settings.basics.openMainOnSelection"
+                :label="systemLanguageSettings.openMainOnSelection"
                 size="large"
               />
             </el-form-item>
@@ -407,11 +499,11 @@ export default {
               :placeholder="systemLanguageSettings.recordShortcut"
             />
           </el-form-item>
-          <el-form-item :label="systemLanguageSettings.pickup">
+          <el-form-item :label="systemLanguageSettings.selection">
             <el-input
-              @keyup="keyUp($event, 'pickup')"
+              @keyup="keyUp($event, 'selection')"
               readonly
-              :model-value="settings.shortcuts.pickup.join('+')"
+              :model-value="settings.shortcuts.selection.join('+')"
               :placeholder="systemLanguageSettings.recordShortcut"
             />
           </el-form-item>
@@ -426,6 +518,19 @@ export default {
         </el-form>
       </el-tab-pane>
       <el-tab-pane :label="systemLanguageSettings.aboutMe" name="author">
+        <el-scrollbar class="settings" :height="scrollerHeight">
+          <div class="author flex-column">
+            <div class="treat-me">
+              {{ systemLanguage["treatMe"]
+              }}<a href="" style="margin-left: 10px" @click.prevent="openGithub"
+                >TranslatorGPT</a
+              >
+            </div>
+            <div class="pictures">
+              <img src="/src/assets/imgs/alipay.jpg" />
+            </div>
+          </div>
+        </el-scrollbar>
       </el-tab-pane>
     </el-tabs>
 
@@ -501,6 +606,24 @@ export default {
     .el-input,
     input {
       cursor: pointer !important;
+    }
+  }
+
+  .author {
+    width: 100%;
+
+    .treat-me {
+      width: 80%;
+      margin-top: 5px;
+      line-height: 2;
+    }
+
+    .pictures {
+      margin-top: 5px;
+      img {
+        width: 160px;
+        height: auto;
+      }
     }
   }
 }

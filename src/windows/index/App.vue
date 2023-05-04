@@ -3,12 +3,13 @@
 import { appWindow, LogicalPosition } from "@tauri-apps/api/window";
 import { Promotion, Document, EditPen, Setting } from "@element-plus/icons-vue";
 import { listen, emit } from "@tauri-apps/api/event";
-import { invoke } from "@tauri-apps/api/tauri";
 import { exit } from "@tauri-apps/api/process";
 
 // Private
 import systemLanguage from "/src/assets/data/system_language.js";
 import Settings from "./components/Settings.vue";
+import showWindow from "/src/utils/show_window.js";
+import banDefaultShortcuts from "/src/utils/ban_default_shortcuts.js";
 
 const Icons = [Promotion, EditPen, Document];
 
@@ -23,11 +24,6 @@ export default {
   },
   data() {
     return {
-      pageNum: "0",
-      translationConfig: {
-        selectTranslation: true,
-        selectPolish: true,
-      },
       // UI
       maximized: false,
       isShowing: false,
@@ -41,6 +37,9 @@ export default {
     },
     settings() {
       return this.$store.state.settings;
+    },
+    translationConfig() {
+      return this.$store.state.config.translation;
     },
     systemLanguage() {
       return systemLanguage[this.language];
@@ -57,6 +56,11 @@ export default {
   methods: {
     async onSwitchChange(event, type) {
       await emit("sync_translation_config", { type: event });
+    },
+    menuOnSelect(arg) {
+      this.$router.push(
+        "/" + systemLanguage["English"].menu[arg].toLowerCase()
+      );
     },
     manualBlur() {
       this.isBlurring = true;
@@ -81,14 +85,20 @@ export default {
         return;
       }
       this.isShowing = true;
-      await appWindow.center();
-      await appWindow.unminimize();
-      await appWindow.show();
-      await appWindow.setFocus();
+      await showWindow();
       this.isShowing = false;
     },
     showSettings() {
       this.$refs.settings.show();
+    },
+    selectMenuItem(index) {
+      const menu = document.getElementById("menu");
+      if (menu) {
+        const menuItem = document.getElementsByTagName("li")[index];
+        if (menuItem) {
+          menuItem.click();
+        }
+      }
     },
     async addListeners() {
       this.listeners.push(
@@ -97,9 +107,10 @@ export default {
           await listen("show_index", async () => {
             await this.showWindow();
           }),
+          // 切换到主窗口
           await listen("change_to_translation", async () => {
-            this.pageNum = "0";
             await this.showWindow();
+            this.selectMenuItem(0);
           }),
           // 监听窗口是否最大化
           await appWindow.onResized(async ({ payload: size }) => {
@@ -133,7 +144,11 @@ export default {
       <div class="title">TranslateGPT</div>
       <div class="middle"></div>
       <div class="icons flex-row">
-        <div class="icon icon-hover setting-button" @click="showSettings">
+        <div
+          class="icon icon-hover setting-button"
+          @click="showSettings"
+          :title="systemLanguage.settings.settings"
+        >
           <el-icon size="18" color="#666666"><Setting /></el-icon>
         </div>
         <div
@@ -164,7 +179,7 @@ export default {
     </div>
     <div class="bottom flex-row">
       <!-- 菜单 -->
-      <el-menu class="menu" :default-active="pageNum">
+      <el-menu id="menu" class="menu" default-active="0" @select="menuOnSelect">
         <el-menu-item :index="index.toString()" v-for="(item, index) in menu">
           <el-icon><component :is="item.icon"></component></el-icon>
           <template #title>{{ item.label }}</template>
@@ -172,22 +187,28 @@ export default {
         <div class="menu-bottom-buttons" :class="[language]">
           <div class="button flex-row">
             <el-switch
-              @change="onSwitchChange($event, 'captureTranslation')"
-              v-model="translationConfig.captureTranslation"
+              @change="onSwitchChange($event, 'selectTranslation')"
+              v-model="translationConfig.selectTranslation"
               size="small"
             />{{ systemLanguage["select"] }}
           </div>
           <div class="button flex-row">
             <el-switch
-              @change="onSwitchChange($event, 'selectTranslation')"
-              v-model="translationConfig.selectTranslation"
+              @change="onSwitchChange($event, 'captureTranslation')"
+              v-model="translationConfig.captureTranslation"
               size="small"
             />{{ systemLanguage["capture"] }}
           </div>
         </div>
       </el-menu>
       <div class="main">
-        <router-view path="/"></router-view>
+        <router-view v-slot="{ Component }">
+          <transition>
+            <keep-alive>
+              <component :is="Component" />
+            </keep-alive>
+          </transition>
+        </router-view>
       </div>
     </div>
     <Settings ref="settings" />
@@ -299,6 +320,11 @@ $icon-size: 30px;
       width: calc(100% - 80px);
     }
 
+    &.French {
+      padding: 0px 26px;
+      width: calc(100% - 52px);
+    }
+
     &.Chinese {
       width: 100%;
       display: flex;
@@ -320,5 +346,50 @@ $icon-size: 30px;
   flex: 1;
   height: 100%;
   background-color: white;
+
+  .el-input__wrapper {
+    padding-left: 7px !important;
+    padding-right: 3px !important;
+  }
+
+  .el-input__wrapper,
+  textarea {
+    background-color: transparent !important;
+  }
+
+  textarea {
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+  }
+
+  input {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+  }
+
+  .hints {
+    height: $tips-height;
+  }
+
+  .control-btns {
+    .el-button {
+      width: 90px !important;
+    }
+  }
+
+  .icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .config-selector {
+    .el-select .el-input__wrapper {
+      background-color: $blue-background !important;
+      box-shadow: none !important;
+    }
+    input {
+      color: black !important;
+    }
+  }
 }
 </style>
