@@ -1,45 +1,45 @@
 name: Release
- 
+
 on:
   push:
     tags:
-      - 'v*'
- 
+      - "v*"
+
 jobs:
   release:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-latest, windows-latest]
+        platform: [macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
- 
+
       - name: Install Node
         uses: actions/setup-node@v1
         with:
           node-version: 16
- 
+
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
- 
+
       - name: Install Dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
- 
+
       - run: yarn
- 
+
       - name: Build Tauri
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ''  TAURI_KEY_PASSWORD: "" # 密钥的加密文本，与seecrts时输入的密码一致即可。如果未输入密码，则此处留空，如果输入了密码，则也需要添加到 secrets 中，然后使用 ${{ secrets.TAURI_PRIVATE_KEY_PASSWORD }} 这种形式
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }} # 密钥的加密文本，与seecrts时输入的密码一致即可。如果未输入密码，则此处留空，如果输入了密码，则也需要添加到 secrets 中，然后使用 ${{ secrets.TAURI_PRIVATE_KEY_PASSWORD }} 这种形式
         with:
           tagName: v__VERSION__
           releaseName: v__VERSION__
@@ -49,14 +49,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
- 
+
       - name: Install Node
         uses: actions/setup-node@v1
         with:
           node-version: 16
- 
+
       - run: yarn
- 
+
       - name: Create Update
         run: yarn update
         env:
