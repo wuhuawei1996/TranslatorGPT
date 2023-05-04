@@ -122,6 +122,7 @@ export default {
   },
   async mounted() {
     this.addListeners();
+    banDefaultShortcuts();
   },
   unmounted() {
     this.listeners.map((item) => item());

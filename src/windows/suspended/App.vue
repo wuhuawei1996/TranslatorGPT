@@ -98,7 +98,7 @@ export default {
     await this.listener();
     emit("call_for_sync_settings");
     this.setWindowSize();
-    //banDefaultShortcuts();
+    banDefaultShortcuts();
   },
   unmounted() {
     this.listeners.map((item) => item());
