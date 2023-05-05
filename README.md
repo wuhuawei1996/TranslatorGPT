@@ -1,12 +1,11 @@
 # TranslateGPT
-[What's included](#Whats-included)
-A ChatGPT-based translation application developed using Tauri, with main features including word pickup translation, screenshot translation, and paper proofreading.<br>
-一个基于 ChatGPT 的翻译软件，使用 Tauri 开发，主要功能包括取词翻译、截图翻译和论文润色。
-
 This software has not been fully tested, please wait.
-<br>
-<br>
-<br>
-<br><br><br>
-<br><br><br><br><br><br><br><br><br><br><br>
-# Whats included
++ [Introduction in English](#introduction-in-english)
++ [Introduction in Chinese](#introduction-in-chinese)
+
+
+## Introduction in English
+A ChatGPT-based translation application developed using Tauri, with main features including translation by selecting, translation by screenshot and paper proofreading.
+
+## Introduction in Chinese
+一个基于 ChatGPT 的翻译软件，使用 Tauri 开发，主要功能包括划词翻译、截图翻译和论文润色。
