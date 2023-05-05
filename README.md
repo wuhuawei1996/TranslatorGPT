@@ -23,7 +23,7 @@ A ChatGPT-based translation application developed using Tauri, with main feature
 
 
 
-### 1. 关于设置
+### 1. 设置
 #### - 语言
 安装并启动软件后，可以先在 ```设置 - 基础设置``` 中设置系统的语言。本软件目前支持简体中文、英语两种语言。如果有熟悉其它语言的热心的用户，想要帮助我翻译软件中出现的所有文字，请通过邮件联系我。
 #### - 划词/截屏时打开主窗口
