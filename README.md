@@ -5,8 +5,12 @@ This software has not been fully tested, please wait.
 <img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_4.gif" width="60%"  />
 </div>
 
+
 + [Introduction in English](#introduction-in-english)
 + [中文介绍](#中文介绍)
+
+
+
 
 
 ## Introduction in English
@@ -15,8 +19,9 @@ A ChatGPT-based translation application developed using Tauri, with main feature
 ## 中文介绍
 一个基于 ChatGPT 的翻译软件，使用 Tauri 开发，主要功能包括划词翻译、截图翻译和论文润色。
 
+
 <div align="center">
-<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_1.jpg" width="70%"  />
+<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_6.gif" width="70%"  />
 </div>
 
 
@@ -40,6 +45,12 @@ A ChatGPT-based translation application developed using Tauri, with main feature
 按下快捷键后，会出现截屏的界面。选择好要截取的区域后，点击 ```√``` 按钮，软件就会开始识别所选区域中的文字，然后将识别出的文字传给相应的引擎进行翻译。如果用户想要放弃截取的区域，可以点击 ```×``` 按钮或按下 ```Esc``` 键。
 
 本软件使用开源 OCR 引擎 [Tesseract.js](https://github.com/naptha/tesseract.js) 来进行文字识别。根据开发者测试，绝大多数常见语言的识别效果都很好，除了简体中文与繁体中文。为此，开发者做了一些优化，一定程度上提升了这两种语言的识别效果。要注意的是，与划词翻译不同，<ins>截屏翻译必须要指定源语言</ins>，否则文字识别效果会佷差。此外，第一次识别某种语言的时候，需要下载相应的语言包，所以花费时间会比较久，之后就不用等待这么长时间。
+
+<div align="center">
+<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_5.gif" width="60%"  />
+</div>
+
+
 #### 提示词
 根据开发者观察，对于 ```gpt-3.5-turbo``` 这类 NLP 模型，提供相应的关键词，可以有效地提升翻译质量。提示的格式为：“提示1+提示2+提示3...”。比如我想要翻译的内容来自法国数学家 Bertholot 的一篇关于 Arithmetic D-modules 的论文，我就可以输入提示词：Bertholot + Arithmetirc D-modules + Rigid Cohomlogy + Algebraic Geometry。建议使用英文的提示词，否则可能出现令人匪夷所思的结果。这个功能开发者并没有进行充分地研究与调试，如果用户有自己的心得体会，请通过邮件与开发者进行分享，谢谢！
 
@@ -56,9 +67,6 @@ A ChatGPT-based translation application developed using Tauri, with main feature
 
 许多用户会有困惑：每次小窗口弹出时，我还来不及选择引擎和语言，就已经在进行翻译/润色工作了，怎样才能先调出小窗口设置引擎和语言呢？这里的一个技巧是：在不选择任何内容的情况下，按下 ```划词翻译``` 的快捷键。这样做小窗口就会弹出，并提示“未选择要xx的内容”，但不会进行翻译/润色。
 
-<div align="center">
-<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_3.jpg" width="40%" />
-</div>
 
 ### 致谢
 
