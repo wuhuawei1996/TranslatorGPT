@@ -2,7 +2,7 @@
 This software has not been fully tested, please wait.
 
 <div align="center">
-<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_4.jpg" width="70%"  />
+<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_4.gif" width="60%"  />
 </div>
 
 + [Introduction in English](#introduction-in-english)
