@@ -14,6 +14,8 @@ A ChatGPT-based translation application developed using Tauri, with main feature
 
 ![image](https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_2.jpg)
 
+![image](https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_3.jpg)
+
 ### 关于设置
 #### 语言
 安装并启动软件后，可以先在 ```设置 - 基础设置``` 中设置系统的语言。本软件目前支持简体中文、英语两种语言。如果有熟悉其它语言的热心的用户，想要帮助我翻译软件中出现的所有文字，请通过邮件联系我。
