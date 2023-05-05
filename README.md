@@ -52,7 +52,7 @@ A ChatGPT-based translation application developed using Tauri, with main feature
 许多用户会有困惑：每次小窗口弹出时，我还来不及选择引擎和语言，就已经在进行翻译/润色工作了，怎样才能先调出小窗口设置引擎和语言呢？这里的一个技巧是：在不选择任何内容的情况下，按下 ```划词翻译``` 的快捷键。这样做小窗口就会弹出，并提示“未选择要xx的内容”，但不会进行翻译/润色。
 
 <div align="center">
-<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_3.jpg" width="460px" />
+<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_3.jpg" width="40%" />
 </div>
 
 ### 致谢
