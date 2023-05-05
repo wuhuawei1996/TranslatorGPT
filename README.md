@@ -5,7 +5,7 @@ This software has not been fully tested, please wait.
 + [中文介绍](#中文介绍)
 
 <div align="center">
-<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_4.gif" width="60%"  />
+<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_4.gif" width="70%"  />
 </div>
 
 
@@ -18,7 +18,7 @@ A ChatGPT-based translation application developed using Tauri, with main feature
 
 
 <div align="center">
-<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_6.gif" width="70%"  />
+<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_6.gif" width="80%"  />
 </div>
 
 
@@ -44,7 +44,7 @@ A ChatGPT-based translation application developed using Tauri, with main feature
 本软件使用开源 OCR 引擎 [Tesseract.js](https://github.com/naptha/tesseract.js) 来进行文字识别。根据开发者测试，绝大多数常见语言的识别效果都很好，除了简体中文与繁体中文。为此，开发者做了一些优化，一定程度上提升了这两种语言的识别效果。要注意的是，与划词翻译不同，<ins>截屏翻译必须要指定源语言</ins>，否则文字识别效果会佷差。此外，第一次识别某种语言的时候，需要下载相应的语言包，所以花费时间会比较久，之后就不用等待这么长时间。
 
 <div align="center">
-<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_5.gif" width="80%"  />
+<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_5.gif" width="90%"  />
 </div>
 
 
@@ -71,7 +71,7 @@ A ChatGPT-based translation application developed using Tauri, with main feature
 这是开发者开源的第一个完整的项目，虽不复杂，也并不简单。事实上，开发过有图形界面的程序的开发者都知道，为了做出好看的 UI、为了提供舒适的交互体验、为了预判用户可能产生的错误操作，需要花费大量的时间的精力。如果你觉得这个软件帮助到了你，请给这个项目加颗星，也可以请我喝一杯咖啡。下面是我的支付宝收款码：
 
 <div align="center">
-<img src="https://github.com/wuhuawei1996/TranslatorGPT/blob/master/src/assets/imgs/alipay.jpg" width="25%" />
+<img src="https://github.com/wuhuawei1996/TranslatorGPT/blob/master/src/assets/imgs/alipay.jpg" width="30%" />
 </div>
 
 
