@@ -44,7 +44,7 @@ A ChatGPT-based translation application developed using Tauri, with main feature
 本软件使用开源 OCR 引擎 [Tesseract.js](https://github.com/naptha/tesseract.js) 来进行文字识别。根据开发者测试，绝大多数常见语言的识别效果都很好，除了简体中文与繁体中文。为此，开发者做了一些优化，一定程度上提升了这两种语言的识别效果。要注意的是，与划词翻译不同，<ins>截屏翻译必须要指定源语言</ins>，否则文字识别效果会佷差。此外，第一次识别某种语言的时候，需要下载相应的语言包，所以花费时间会比较久，之后就不用等待这么长时间。
 
 <div align="center">
-<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_5.gif" width="90%"  />
+<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_5.gif" width="100%"  />
 </div>
 
 
