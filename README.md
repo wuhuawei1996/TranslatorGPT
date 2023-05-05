@@ -10,11 +10,11 @@ A ChatGPT-based translation application developed using Tauri, with main feature
 ## 中文介绍
 一个基于 ChatGPT 的翻译软件，使用 Tauri 开发，主要功能包括划词翻译、截图翻译和论文润色。
 
-![image](https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_1.jpg)
+<div align="center">
+<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_1.jpg" width="70%"  />
+</div>
 
-![image](https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_2.jpg)
 
-![image](https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_3.jpg)
 
 ### 关于设置
 #### 语言
@@ -51,11 +51,17 @@ A ChatGPT-based translation application developed using Tauri, with main feature
 
 许多用户会有困惑：每次小窗口弹出时，我还来不及选择引擎和语言，就已经在进行翻译/润色工作了，怎样才能先调出小窗口设置引擎和语言呢？这里的一个技巧是：在不选择任何内容的情况下，按下 ```划词翻译``` 的快捷键。这样做小窗口就会弹出，并提示“未选择要xx的内容”，但不会进行翻译/润色。
 
+<div align="center">
+<img src="https://github.com/wuhuawei1996/wuhuawei1996.github.io/blob/main/pictures/screenshot_3.jpg" width="460px" />
+</div>
+
 ### 致谢
 
 ### 赞助
 这是开发者开源的第一个完整的项目，虽不复杂，也并不简单。事实上，开发过有图形界面的程序的开发者都知道，为了做出好看的 UI、为了提供舒适的交互体验、为了预判用户可能产生的错误操作，需要花费大量的时间的精力。如果你觉得这个软件帮助到了你，请给这个项目加颗星，也可以请我喝一杯咖啡。下面是我的支付宝收款码：
 
-![image](https://github.com/wuhuawei1996/TranslatorGPT/blob/master/src/assets/imgs/alipay.jpg)
+<div align="center">
+<img src="https://github.com/wuhuawei1996/TranslatorGPT/blob/master/src/assets/imgs/alipay.jpg" width="25%" />
+</div>
 
 
